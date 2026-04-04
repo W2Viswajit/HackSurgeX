@@ -1766,7 +1766,9 @@
       padding: 1.4rem;
       border: 1px solid rgba(255, 255, 255, .05);
       background: rgba(255, 255, 255, .01);
-      position: relative
+      position: relative;
+      overflow: hidden;
+      min-width: 0
     }
 
     .contact-info-item::before {
@@ -1818,7 +1820,8 @@
       font-size: 1.05rem;
       font-weight: 600;
       color: #ccc;
-      word-break: break-all
+      overflow-wrap: break-word;
+      word-break: normal
     }
 
     .ci-val a {
@@ -2137,6 +2140,19 @@
 
       .sp-hero {
         padding: 2rem 1.5rem
+      }
+
+      .about-content p {
+        overflow-wrap: break-word;
+        word-break: normal
+      }
+
+      .contact-info-item {
+        max-width: 100%
+      }
+
+      .ci-val {
+        font-size: .95rem
       }
     }
 
