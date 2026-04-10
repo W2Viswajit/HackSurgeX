@@ -2214,10 +2214,95 @@
                 font-size: clamp(3rem, 12vw, 4.5rem)
             }
         }
+
+        /* Intro Animation */
+        #intro-animation {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+        }
+
+        #intro-animation.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .intro-logo-wrap {
+            position: relative;
+            width: clamp(280px, 80vw, 760px);
+            aspect-ratio: 722 / 187;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: introLogoIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.3s;
+        }
+
+        .intro-base-logo {
+            position: absolute;
+            inset: 0;
+            background-image: url('./images/HackSurgeX%20Logo.jpeg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .intro-mask {
+            position: absolute;
+            background: #000;
+            pointer-events: none;
+        }
+
+        .intro-mask-left {
+            left: 0;
+            width: 37%;
+            top: 25%;
+            height: 40%;
+            animation: introMaskFade 0.6s ease-out forwards 0.8s;
+        }
+
+        .intro-mask-right {
+            right: 0;
+            width: 51%;
+            top: 25%;
+            height: 40%;
+            animation: introMaskFade 0.6s ease-out forwards 0.8s;
+        }
+
+        .intro-mask-tagline {
+            left: 0;
+            width: 100%;
+            top: 70%;
+            bottom: 0;
+            animation: introMaskFade 0.6s ease-out forwards 1.3s;
+        }
+
+        @keyframes introLogoIn {
+            0% { opacity: 0; transform: scale(0.85); filter: drop-shadow(0 0 0px rgba(232, 25, 15, 0)); }
+            100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 25px rgba(232, 25, 15, 0.6)); }
+        }
+
+        @keyframes introMaskFade {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
     </style>
 </head>
 
 <body>
+    <!-- Intro Animation -->
+    <div id="intro-animation">
+        <div class="intro-logo-wrap">
+            <div class="intro-base-logo"></div>
+            <div class="intro-mask intro-mask-left"></div>
+            <div class="intro-mask intro-mask-right"></div>
+            <div class="intro-mask intro-mask-tagline"></div>
+        </div>
+    </div>
+
     <div id="cur"></div>
     <div id="cur-ring"></div>
 
@@ -3318,14 +3403,38 @@
         }
         animTC();
 
-        // Page load flash
+        // Page load flash & Intro animation
         window.addEventListener("load", () => {
-            const flash = document.createElement("div");
-            flash.style.cssText = "position:fixed;inset:0;background:rgba(255,30,30,0.12);pointer-events:none;z-index:100000;animation:flashFade .6s ease forwards";
-            document.head.insertAdjacentHTML("beforeend", "<style>@keyframes flashFade{0%{opacity:1}100%{opacity:0}}</style>");
-            document.body.appendChild(flash);
-            setTimeout(() => flash.remove(), 700);
-            setTimeout(() => boltSVG.fire(), 300);
+            const navEntries = performance.getEntriesByType("navigation");
+            const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+            const isFromSameSite = document.referrer.includes(window.location.host) && document.referrer !== "";
+            const introScreen = document.getElementById("intro-animation");
+
+            if (introScreen && isFromSameSite && !isReload) {
+                // If intra-site navigation (not reload), skip intro
+                introScreen.style.display = "none";
+                triggerFlash();
+            } else if (introScreen) {
+                // Intro animation logic
+                setTimeout(() => {
+                    introScreen.classList.add("fade-out");
+                    setTimeout(() => boltSVG.fire(), 400); // 400ms into the 600ms fade
+                    setTimeout(() => introScreen.remove(), 600);
+                }, 2800); // Hold intro for 2.8s
+            } else {
+                triggerFlash();
+            }
+
+            function triggerFlash() {
+                const flash = document.createElement("div");
+                flash.style.cssText = "position:fixed;inset:0;background:rgba(255,30,30,0.12);pointer-events:none;z-index:100000;animation:flashFade .6s ease forwards";
+                if (!document.getElementById("flashFadeStyle")) {
+                    document.head.insertAdjacentHTML("beforeend", "<style id='flashFadeStyle'>@keyframes flashFade{0%{opacity:1}100%{opacity:0}}</style>");
+                }
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 700);
+                setTimeout(() => boltSVG.fire(), 300);
+            }
         });
     </script>
     <script defer async src="https://apply.devfolio.co/v2/sdk.js"></script>
